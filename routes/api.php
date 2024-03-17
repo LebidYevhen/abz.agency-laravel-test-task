@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\PositionController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,7 @@ Route::fallback(function () {
 
 Route::prefix('v1')->group(function () {
     Route::get('/positions', [PositionController::class, 'show']);
+    Route::get('/users', [UserController::class, 'show']);
 });
 
 
