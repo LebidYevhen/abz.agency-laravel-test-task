@@ -14,7 +14,7 @@ class PositionController extends Controller
     {
         $positions = Position::all();
 
-        if (!$positions) {
+        if ($positions->isEmpty()) {
             return response()->json([
               'success' => false,
               'message' => 'Positions not found'
