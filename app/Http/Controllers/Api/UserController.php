@@ -7,7 +7,11 @@ use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\File;
 
 use function Symfony\Component\Translation\t;
 
@@ -16,8 +20,8 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $validator = Validator::make($request->all(), [
-          'page' => 'integer|min:1',
-          'count' => 'integer|min:1'
+          'page' => ['integer', 'min:1'],
+          'count' => ['integer', 'min:1']
         ]);
 
         if ($validator->fails()) {
@@ -51,7 +55,7 @@ class UserController extends Controller
     public function show($id)
     {
         $validator = Validator::make(['user_id' => $id], [
-          'user_id' => 'integer|min:1',
+          'user_id' => ['integer', 'min:1'],
         ]);
 
         if ($validator->fails()) {
@@ -77,6 +81,66 @@ class UserController extends Controller
         return response()->json([
           'success' => true,
           'user' => new UserResource($user)
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        // TODO: implement token generation and validation
+        $validator = Validator::make($request->all(), [
+          'token' => ['required',],
+          'name' => ['required', 'string', 'min:2', 'max:60'],
+          'email' => [
+            'required',
+            'unique:users,email',
+            'string',
+            'min:2',
+            'max:100',
+            'email:rfc'
+          ],
+          'phone' => ['required', 'string', 'unique:users,phone', 'regex:#^[\+]{0,1}380([0-9]{9})$#'],
+          'position_id' => ['required', 'integer', 'min:1'],
+          'photo' => [
+            'required',
+            'mimes:jpeg,jpg',
+            Rule::dimensions()->minWidth(70)->minHeight(70),
+            'max:5120'
+          ],
+          'password' => ['required', 'string']
+        ]);
+
+        if (isset($validator->errors()->messages()['email']) || isset($validator->errors()->messages()['phone'])) {
+            return response()->json([
+              'success' => false,
+              'message' => 'User with this phone or email already exist'
+            ], 409);
+        }
+
+        if ($validator->fails()) {
+            return response()->json([
+              'success' => false,
+              'message' => 'Validation failed',
+              'fails' => $validator->errors()
+            ], 422);
+        }
+
+        $file = $request->file('photo');
+        $name = $file->hashName();
+        $file->store('public/images/users');
+
+        $user = User::create([
+          'name' => $request->get('name'),
+          'email' => $request->get('email'),
+          'password' => Hash::make($request->get('password')),
+          'phone' => $request->get('phone'),
+          'position_id' => $request->get('position_id'),
+          'photo' => $name
+        ]);
+
+        return response()->json([
+          'success' => true,
+          'user_id' => $user->id,
+          'message' => 'New user successfully registered',
         ]);
     }
 }
