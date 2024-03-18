@@ -17,8 +17,11 @@ Route::fallback(function () {
 });
 
 Route::prefix('v1')->group(function () {
-    Route::get('/positions', [PositionController::class, 'show']);
-    Route::get('/users', [UserController::class, 'show']);
+    Route::get('/positions', [PositionController::class, 'index']);
+    Route::group(['prefix' => 'users'], function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::get('/{id}', [UserController::class, 'show']);
+    });
 });
 
 

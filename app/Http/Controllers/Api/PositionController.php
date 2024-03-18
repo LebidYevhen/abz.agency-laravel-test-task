@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class PositionController extends Controller
 {
-    public function show()
+    public function index()
     {
         $positions = Position::all();
 

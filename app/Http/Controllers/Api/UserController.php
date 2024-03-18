@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserCollection;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
+use function Symfony\Component\Translation\t;
+
 class UserController extends Controller
 {
-    public function show(Request $request)
+    public function index(Request $request)
     {
         $validator = Validator::make($request->all(), [
           'page' => 'integer|min:1',
@@ -42,6 +45,38 @@ class UserController extends Controller
             'prev_url' => $users->previousPageUrl(),
           ],
           'users' => new UserCollection($users),
+        ]);
+    }
+
+    public function show($id)
+    {
+        $validator = Validator::make(['user_id' => $id], [
+          'user_id' => 'integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+              'success' => false,
+              'message' => 'Validation failed',
+              'fails' => $validator->errors()
+            ], 400);
+        }
+
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+              'success' => false,
+              'message' => 'The user with the requested identifier does not exist',
+              'fails' => [
+                'user_id' => ['User not found']
+              ]
+            ], 404);
+        }
+
+        return response()->json([
+          'success' => true,
+          'user' => new UserResource($user)
         ]);
     }
 }
