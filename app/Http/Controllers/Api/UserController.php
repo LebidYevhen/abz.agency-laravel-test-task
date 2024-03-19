@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 use Illuminate\Validation\Rule;
@@ -17,6 +19,13 @@ use function Symfony\Component\Translation\t;
 
 class UserController extends Controller
 {
+    private UserService $userService;
+
+    public function __construct(UserService $user_service)
+    {
+        $this->userService = $user_service;
+    }
+
     public function index(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -88,7 +97,6 @@ class UserController extends Controller
     {
         // TODO: implement token generation and validation
         $validator = Validator::make($request->all(), [
-          'token' => ['required',],
           'name' => ['required', 'string', 'min:2', 'max:60'],
           'email' => [
             'required',
@@ -126,7 +134,8 @@ class UserController extends Controller
 
         $file = $request->file('photo');
         $name = $file->hashName();
-        $file->store('public/images/users');
+
+        Storage::put("public/images/users/$name", $this->userService->getOptimizedImageData($file));
 
         $user = User::create([
           'name' => $request->get('name'),
