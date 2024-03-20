@@ -117,12 +117,13 @@ class UserController extends Controller
           'password' => ['required', 'string']
         ]);
 
-        if (isset($validator->errors()->messages()['email']) || isset($validator->errors()->messages()['phone'])) {
-            return response()->json([
-              'success' => false,
-              'message' => 'User with this phone or email already exist'
-            ], 409);
-        }
+        // TODO: work on it because we are always in that condition where there is an email or phone error.
+//        if (isset($validator->errors()->messages()['email']) || isset($validator->errors()->messages()['phone'])) {
+//            return response()->json([
+//              'success' => false,
+//              'message' => 'User with this phone or email already exist'
+//            ], 409);
+//        }
 
         if ($validator->fails()) {
             return response()->json([

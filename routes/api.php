@@ -20,7 +20,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/positions', [PositionController::class, 'index']);
     Route::group(['prefix' => 'users'], function () {
         Route::get('/', [UserController::class, 'index']);
-        Route::post('/', [UserController::class, 'store']);
+        Route::post('/', [UserController::class, 'store'])->name('users.store');
         Route::get('/{id}', [UserController::class, 'show']);
     });
 });

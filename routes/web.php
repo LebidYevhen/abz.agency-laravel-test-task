@@ -2,6 +2,5 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::inertia('/', 'Users/Index')->name('users.index');
+Route::inertia('/users/create', 'Users/Create')->name('users.create');
